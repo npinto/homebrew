@@ -1,13 +1,35 @@
 require 'formula'
 
 class Tig < Formula
-  url 'http://jonas.nitro.dk/tig/releases/tig-0.18.tar.gz'
+  url 'https://github.com/jonas/tig/tarball/tig-0.18'
   homepage 'http://jonas.nitro.dk/tig/'
-  md5 '4fa9e33c5daa76b6fed11e068405356f'
+  version '0.18'
+  md5 '52031d9528a2db9d87cee242a8e068fb'
+
+  head 'https://github.com/jonas/tig.git'
+
+  depends_on 'libiconv'
+  depends_on 'autoconf-archive'
+
+  def options
+    [['--build-docs', "Build man pages using asciidoc and xmlto"]]
+  end
+
+  if ARGV.include? '--build-docs'
+    # these are needed to build man pages
+    depends_on 'asciidoc'
+    depends_on 'xmlto'
+  end
 
   def install
+    ENV['ACLOCAL'] = "aclocal -I#{HOMEBREW_PREFIX}/share/aclocal"
+
+    system "make configure"
     system "./configure", "--prefix=#{prefix}"
     system "make install"
-    system "make install-doc-man"
+
+    if ARGV.include? '--build-docs'
+      system "make install-doc-man"
+    end
   end
 end
